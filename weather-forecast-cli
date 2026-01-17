@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# The global variables
+# =======================================================
+hodie=$(date "+%a %d %b %Y")
+quaesitum=$(cat << EOF
+
+What do you want the forecast to be shown?
+1 |  Today's forecast
+2 |  Three days of forecast that's started from now
+
+[default=1]
+EOF
+)
+auxilium=$(cat << EOF
+
+Usage: weather-forecast-cli <an argument>
+
+1, -t, --today          Displaying today's forecast.
+2, -a, --all            Displaying three days of forecast 
+                        that's started from now.
+-h, --help              Getting help for commands
+EOF
+)
+# =======================================================
+
+
+# the function to display the forecast that a user wants
+ostentus () { 
+  case "$1" in
+    "1"|"-t"|"--today") correctio
+      sed '1,1!d' $HOME/.local/share/forecast.txt
+      sed '8,17!d' $HOME/.local/share/forecast.txt
+      echo -e "\nFollow [46m[30m@igor_chubin[0m for wttr.in updates"
+    ;;
+    "2"|"-a"|"--all") correctio
+      sed '1,1!d' $HOME/.local/share/forecast.txt
+      sed '8,37!d' $HOME/.local/share/forecast.txt
+      echo -e "\nFollow [46m[30m@igor_chubin[0m for wttr.in updates"
+    ;;
+    *) echo "$auxilium"
+    ;;
+esac
+}
+
+get_forecast_data (){
+  curl -s http://wttr.in/london > $HOME/.local/share/forecast.txt # you can change the city as you want
+}
+
+# before going to the ostentus, the file must be checked first using the correctio function
+# the curl command is for requesting the data from http://wttr.in API
+correctio () {
+  if ! [ -f $HOME/.local/share/forecast.txt ]; then
+    echo -e "\nDownloading the forecast data..."
+    get_forecast_data
+  elif [ "$(date -r $HOME/.local/share/forecast.txt "+%a %d %b %Y")" != "$hodie" ] || [ "$(cat $HOME/.local/share/forecast.txt)" == "" ]; then
+    echo -e "\nUpdating the forecast data..."
+    get_forecast_data
+  fi
+} 
+
+# this is the first interface if the user doesn't give a single argument
+if [ -z $1 ]; then
+  read -p "$quaesitum " choose
+  ostentus "$choose"
+else
+  choose="$1"
+  ostentus "$choose"
+fi
