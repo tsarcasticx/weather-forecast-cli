@@ -53,7 +53,6 @@ sync_cache () {
   forecast_data_dir="$HOME/.local/share/weather-forecast-cli"
   forecast_file="$forecast_data_dir/forecast.txt"
   forecast_file_date="$(date -r $forecast_file +'%d' 2> /dev/null)"
-  cache_date="$(date -r '/tmp/forecast.txt' +'%d' 2> /dev/null)"
 
   if ! [ -f "$forecast_file" ] || [ "$forecast_file_date" != "$current_date" ]; then
     mkdir -p "$forecast_data_dir"
