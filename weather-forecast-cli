@@ -55,10 +55,7 @@ sync_cache () {
   forecast_file_date="$(date -r $forecast_file +'%d' 2> /dev/null)"
   cache_date="$(date -r '/tmp/forecast.txt' +'%d' 2> /dev/null)"
 
-  if ! [ -f "$forecast_file" ]; then
-    cp /tmp/forecast.txt $forecast_data_dir
-
-  elif ! [ -f "$forecast_file" ] && [ "$forecast_file_date" != "$current_date" ]; then
+  if ! [ -f "$forecast_file" ] || [ "$forecast_file_date" != "$current_date" ]; then
     mkdir -p "$forecast_data_dir"
     curl -s "$endpoint" > $forecast_file
     cp $forecast_file /tmp
