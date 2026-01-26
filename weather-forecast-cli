@@ -3,8 +3,8 @@
 # The global variables
 # =======================================================
 endpoint="https://wttr.in/london"
-current_date="$(date +'%d')"
-quaesitum=$(cat << EOF
+current_date="$(date '+%d %b %Y')"
+query=$(cat << EOF
 
 What do you want the forecast to be shown?
 1 |  Today's forecast
@@ -13,7 +13,7 @@ What do you want the forecast to be shown?
 [default=1]: 
 EOF
 )
-auxilium=$(cat << EOF
+help=$(cat << EOF
 
 Usage: weather-forecast-cli <an argument>
 
@@ -27,23 +27,23 @@ EOF
 
 
 # the function to display the forecast that a user wants
-ostentus () {
+display () {
   case "$1" in
     "1"|"-t"|"--today")
       sync_cache
-      forecast="$(cat /tmp/forecast.txt)"
-      echo -e "$forecast" | sed '1,1!d'
-      echo -e "$forecast" | sed '8,17!d'
+      sed '1,1!d' /tmp/forecast.txt
+      sed '8,17!d' /tmp/forecast.txt
       echo -e "\nFollow [46m[30m@igor_chubin[0m for wttr.in updates"
     ;;
     "2"|"-a"|"--all")
       sync_cache
-      forecast="$(cat /tmp/forecast.txt)"
-      echo -e "$forecast" | sed '1,1!d'
-      echo -e "$forecast" | sed '8,37!d'
+      sed '1,1!d' /tmp/forecast.txt
+      sed '8,37!d' /tmp/forecast.txt
       echo -e "\nFollow [46m[30m@igor_chubin[0m for wttr.in updates"
     ;;
-    *) echo "$auxilium"
+    "help"|"h"|"-h"|"--help") echo "$help"
+    ;;
+    *) echo "Invalid argument. See the help below.$help"
     ;;
 esac
 }
@@ -52,11 +52,12 @@ sync_cache () {
 
   forecast_data_dir="$HOME/.local/share/weather-forecast-cli"
   forecast_file="$forecast_data_dir/forecast.txt"
-  forecast_file_date="$(date -r $forecast_file +'%d' 2> /dev/null)"
+  forecast_file_date="$(date -r $forecast_file '+%d %b %Y' 2> /dev/null)"
 
-  if ! [ -f "$forecast_file" ] || [ "$forecast_file_date" != "$current_date" ]; then
+  if ! [ -f "$forecast_file" ] || [ "$forecast_file_date" != "$current_date" ] || [ $(cat $forecast_file) == "" ]; then
     mkdir -p "$forecast_data_dir"
-    curl -s "$endpoint" > $forecast_file
+    echo "Collecting the data..."
+    curl "$endpoint" > "$forecast_file"
     cp $forecast_file /tmp
 
   elif ! [ -f "/tmp/forecast.txt" ]; then
@@ -68,10 +69,10 @@ sync_cache () {
 
 # this is the first interface if the user doesn't give a single argument
 if [ -z $1 ]; then
-  read -p "$quaesitum " choose
+  read -p "$query " choose
   echo -e '\n'
-  ostentus "$choose"
+  display "$choose"
 else
   choose="$1"
-  ostentus "$choose"
+  display "$choose"
 fi
